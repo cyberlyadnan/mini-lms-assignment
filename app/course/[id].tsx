@@ -1,2 +1,182 @@
-import { View, Text } from "react-native";
-export default function CourseDetail() { return <View><Text>Course</Text></View>; }
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { Image } from 'expo-image';
+import { Ionicons } from '@expo/vector-icons';
+import { CourseWithInstructor } from '../../types/course.types';
+import { saveItem, getItem } from '../../utils/asyncStorage';
+import { ENROLLED_COURSE_KEY } from '../../utils/constants';
+
+export default function CourseDetailScreen() {
+  const router = useRouter();
+  const { id, courseData } = useLocalSearchParams<{ id: string, courseData: string }>();
+  const [course, setCourse] = useState<CourseWithInstructor | null>(null);
+  
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const [isEnrolled, setIsEnrolled] = useState(false);
+
+  useEffect(() => {
+    if (courseData) {
+      try {
+        const parsed = JSON.parse(courseData);
+        setCourse(parsed);
+      } catch (e) {
+        console.error('Error parsing course data', e);
+      }
+    }
+    checkEnrollment();
+  }, [id, courseData]);
+
+  const checkEnrollment = async () => {
+    const enrolledIds = await getItem<string[]>(ENROLLED_COURSE_KEY) || [];
+    if (id && enrolledIds.includes(id)) {
+      setIsEnrolled(true);
+    }
+  };
+
+  const handleEnroll = () => {
+    if (!id || isEnrolled) return;
+    setIsEnrolling(true);
+    
+    // Simulate successful API call with a 1.5s delay
+    setTimeout(async () => {
+      setIsEnrolling(false);
+      setIsEnrolled(true);
+      
+      const enrolledIds = await getItem<string[]>(ENROLLED_COURSE_KEY) || [];
+      if (!enrolledIds.includes(id)) {
+        await saveItem(ENROLLED_COURSE_KEY, [...enrolledIds, id]);
+      }
+    }, 1500);
+  };
+
+  const handleViewContent = () => {
+    if (!course) return;
+    router.push({
+      pathname: '/webview',
+      params: { 
+        title: course.title,
+        description: course.description,
+        instructorName: `${course.instructor?.name?.first || 'Unknown'} ${course.instructor?.name?.last || ''}`
+      }
+    });
+  };
+
+  if (!course) {
+    return (
+      <View className="flex-1 bg-[#0F172A] justify-center items-center">
+        <ActivityIndicator size="large" color="#6366F1" />
+      </View>
+    );
+  }
+
+  return (
+    <View className="flex-1 bg-[#0F172A]">
+      <Stack.Screen 
+        options={{
+          headerTitle: '',
+          headerTransparent: true,
+          headerTintColor: '#FFFFFF',
+          headerBackTitleVisible: false,
+          headerRight: () => (
+            <TouchableOpacity className="bg-black/40 p-2 rounded-full mr-2">
+              <Ionicons name="bookmark-outline" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          ),
+          headerLeft: () => (
+            <TouchableOpacity 
+              className="bg-black/40 p-2 rounded-full ml-2"
+              onPress={() => router.back()}
+            >
+              <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+          )
+        }} 
+      />
+      
+      <ScrollView className="flex-1" bounces={false}>
+        <Image
+          source={{ uri: course.thumbnail || 'https://via.placeholder.com/600x400' }}
+          className="w-full h-72"
+          contentFit="cover"
+        />
+        
+        <View className="px-5 pt-6 pb-28">
+          <View className="flex-row items-center mb-3">
+            <View className="bg-[#1E293B] px-3 py-1 rounded-full border border-[#334155]">
+              <Text className="text-[#6366F1] font-medium text-xs uppercase tracking-wider">
+                {course.category || 'Course'}
+              </Text>
+            </View>
+            <View className="flex-row items-center ml-4">
+              <Ionicons name="star" size={14} color="#FBBF24" />
+              <Text className="text-gray-300 ml-1 text-sm">{course.rating?.toFixed(1) || '0.0'}</Text>
+            </View>
+          </View>
+
+          <Text className="text-3xl font-bold text-white mb-2 leading-9">
+            {course.title}
+          </Text>
+          
+          <Text className="text-[#6366F1] text-2xl font-bold mb-6">
+            ${course.price?.toFixed(2) || '0.00'}
+          </Text>
+          
+          <Text className="text-xl font-bold text-white mb-3">About the Course</Text>
+          <Text className="text-gray-400 text-base leading-7 mb-8">
+            {course.description}
+          </Text>
+          
+          <Text className="text-xl font-bold text-white mb-4">Instructor</Text>
+          <View className="bg-[#1E293B] p-4 rounded-2xl flex-row items-center mb-4 border border-[#334155]">
+            <Image
+              source={{ uri: course.instructor?.picture?.large || 'https://via.placeholder.com/150' }}
+              className="w-16 h-16 rounded-full bg-gray-600"
+            />
+            <View className="ml-4 flex-1">
+              <Text className="text-white font-bold text-lg">
+                {course.instructor?.name?.title ? `${course.instructor.name.title} ` : ''}
+                {course.instructor?.name?.first} {course.instructor?.name?.last}
+              </Text>
+              <Text className="text-gray-400 text-sm mt-1">
+                @{course.instructor?.email?.split('@')[0] || 'instructor'}
+              </Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* Bottom Sticky Action Bar */}
+      <View className="absolute bottom-0 left-0 right-0 bg-[#1E293B] border-t border-[#334155]">
+         <SafeAreaView edges={['bottom']}>
+          <View className="px-5 py-4">
+            {isEnrolled ? (
+              <TouchableOpacity 
+                className="bg-[#6366F1] py-4 rounded-xl flex-row items-center justify-center"
+                onPress={handleViewContent}
+              >
+                <Ionicons name="play-circle" size={22} color="white" />
+                <Text className="text-white font-bold text-lg ml-2">View Content</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity 
+                className="bg-[#6366F1] py-4 rounded-xl flex-row items-center justify-center opacity-90 active:opacity-100"
+                onPress={handleEnroll}
+                disabled={isEnrolling}
+              >
+                {isEnrolling ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <>
+                    <Text className="text-white font-bold text-lg">Enroll Now</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            )}
+          </View>
+         </SafeAreaView>
+      </View>
+    </View>
+  );
+}
