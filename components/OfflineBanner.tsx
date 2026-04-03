@@ -1,44 +1,32 @@
-import React, { useEffect } from 'react';
-import { View, Text } from 'react-native';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withTiming, 
-  Easing 
-} from 'react-native-reanimated';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, Animated } from 'react-native';
 import { useNetwork } from '../hooks/useNetwork';
 
 export const OfflineBanner = () => {
   const { isConnected } = useNetwork();
-  const translateY = useSharedValue(-100);
+  const translateY = useRef(new Animated.Value(-100)).current;
 
   useEffect(() => {
     if (!isConnected) {
-      translateY.value = withTiming(0, {
+      Animated.timing(translateY, {
+        toValue: 0,
         duration: 300,
-        easing: Easing.out(Easing.ease),
-      });
+        useNativeDriver: true,
+      }).start();
     } else {
-      translateY.value = withTiming(-100, {
+      Animated.timing(translateY, {
+        toValue: -100,
         duration: 300,
-      });
+        useNativeDriver: true,
+      }).start();
     }
-  }, [isConnected]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 50,
-  }));
-
-  // Hide entirely from layout once it's up
-  if (isConnected && translateY.value === -100) return null;
+  }, [isConnected, translateY]);
 
   return (
-    <Animated.View style={animatedStyle} className="bg-red-500 py-3 flex-row justify-center items-center shadow-md">
+    <Animated.View 
+      className="bg-red-500 py-3 flex-row justify-center items-center shadow-md absolute top-0 left-0 right-0 z-50"
+      style={{ transform: [{ translateY }] }}
+    >
       <Text className="text-white font-bold text-sm text-center">
         No Internet Connection
       </Text>

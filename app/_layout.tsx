@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuthStore } from '../store/authStore';
 import { ActivityIndicator, View } from 'react-native';
-import './global.css';
+import '../global.css';
 
 const queryClient = new QueryClient();
 

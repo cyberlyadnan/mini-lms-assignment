@@ -164,4 +164,4 @@ export const COURSE_HTML_TEMPLATE = `
   </script>
 </body>
 </html>
-\`;
+`;
