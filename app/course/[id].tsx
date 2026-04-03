@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { CourseWithInstructor } from '../../types/course.types';
 import { saveItem, getItem } from '../../utils/asyncStorage';
 import { ENROLLED_COURSE_KEY } from '../../utils/constants';
+import { enrolledIdsFromRaw } from '../../utils/enrolledCourses';
 
 export default function CourseDetailScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { id, courseData } = useLocalSearchParams<{ id: string, courseData: string }>();
   const [course, setCourse] = useState<CourseWithInstructor | null>(null);
@@ -29,25 +31,32 @@ export default function CourseDetailScreen() {
   }, [id, courseData]);
 
   const checkEnrollment = async () => {
-    const enrolledIds = await getItem<string[]>(ENROLLED_COURSE_KEY) || [];
-    if (id && enrolledIds.includes(id)) {
+    const raw = await getItem<unknown[]>(ENROLLED_COURSE_KEY) || [];
+    const enrolledIds = enrolledIdsFromRaw(raw);
+    if (id && enrolledIds.includes(String(id))) {
       setIsEnrolled(true);
     }
   };
 
   const handleEnroll = () => {
-    if (!id || isEnrolled) return;
+    if (!id || isEnrolled || !course) return;
+    const snapshot = course;
     setIsEnrolling(true);
-    
-    // Simulate successful API call with a 1.5s delay
+
     setTimeout(async () => {
       setIsEnrolling(false);
       setIsEnrolled(true);
-      
-      const enrolledIds = await getItem<string[]>(ENROLLED_COURSE_KEY) || [];
-      if (!enrolledIds.includes(id)) {
-        await saveItem(ENROLLED_COURSE_KEY, [...enrolledIds, id]);
-      }
+
+      const raw = await getItem<unknown[]>(ENROLLED_COURSE_KEY) || [];
+      const ids = enrolledIdsFromRaw(raw);
+      const idStr = String(id);
+      if (ids.includes(idStr)) return;
+
+      const next = raw.filter((entry) => {
+        if (typeof entry === 'string') return entry !== idStr;
+        return String((entry as { id: number }).id) !== idStr;
+      });
+      await saveItem(ENROLLED_COURSE_KEY, [...next, snapshot]);
     }, 1500);
   };
 
@@ -73,26 +82,32 @@ export default function CourseDetailScreen() {
 
   return (
     <View className="flex-1 bg-[#0F172A]">
-      <Stack.Screen 
+      <Stack.Screen
         options={{
           headerTitle: '',
           headerTransparent: true,
           headerTintColor: '#FFFFFF',
           headerBackTitleVisible: false,
           headerRight: () => (
-            <TouchableOpacity className="bg-black/40 p-2 rounded-full mr-2">
-              <Ionicons name="bookmark-outline" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
+            <View style={{ paddingTop: insets.top }} className="flex-row items-center">
+              <TouchableOpacity className="bg-black/40 p-2 rounded-full mr-4">
+                <Ionicons name="bookmark-outline" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
           ),
           headerLeft: () => (
-            <TouchableOpacity 
-              className="bg-black/40 p-2 rounded-full ml-2"
-              onPress={() => router.back()}
-            >
-              <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
-          )
-        }} 
+            <View style={{ paddingTop: insets.top }} className="flex-row items-center">
+              <TouchableOpacity
+                className="bg-black/40 p-2 rounded-full ml-4"
+                onPress={() => router.back()}
+                accessibilityRole="button"
+                accessibilityLabel="Go back"
+              >
+                <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          ),
+        }}
       />
       
       <ScrollView className="flex-1" bounces={false}>

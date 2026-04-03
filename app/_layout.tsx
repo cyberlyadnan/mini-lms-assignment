@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuthStore } from '../store/authStore';
 import { ActivityIndicator, View } from 'react-native';
 import '../global.css';
+import { useNotifications } from '../hooks/useNotifications';
 
 const queryClient = new QueryClient();
 
@@ -13,6 +14,7 @@ function InitialLayout() {
   const segments = useSegments();
   const router = useRouter();
   const [isReady, setIsReady] = useState(false);
+  useNotifications();
 
   useEffect(() => {
     checkAuth().finally(() => setIsReady(true));

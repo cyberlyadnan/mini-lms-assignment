@@ -1,0 +1,99 @@
+import React, { useCallback, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Stack, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import { CourseWithInstructor } from '../types/course.types';
+import { loadEnrolledCourses } from '../utils/enrolledCourses';
+
+export default function EnrolledCoursesScreen() {
+  const router = useRouter();
+  const [courses, setCourses] = useState<CourseWithInstructor[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    try {
+      const list = await loadEnrolledCourses();
+      setCourses(list);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh])
+  );
+
+  const openCourse = (course: CourseWithInstructor) => {
+    router.push({
+      pathname: '/course/[id]',
+      params: {
+        id: String(course.id),
+        courseData: JSON.stringify(course),
+      },
+    });
+  };
+
+  return (
+    <View className="flex-1 bg-[#0F172A]">
+      <Stack.Screen
+        options={{
+          title: 'My courses',
+          headerStyle: { backgroundColor: '#0F172A' },
+          headerTintColor: '#FFFFFF',
+          headerTitleStyle: { color: '#FFFFFF', fontWeight: '700' },
+          headerShadowVisible: false,
+          headerBackTitleVisible: false,
+        }}
+      />
+      <SafeAreaView className="flex-1" edges={['bottom']}>
+        {loading ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator size="large" color="#6366F1" />
+          </View>
+        ) : (
+          <FlatList
+            data={courses}
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24 }}
+            ListEmptyComponent={
+              <View className="py-16 px-4 items-center">
+                <Ionicons name="school-outline" size={48} color="#64748B" />
+                <Text className="text-gray-400 text-center mt-4 text-base leading-6">
+                  You have not enrolled in any courses yet.{'\n'}Discover courses on the Home tab.
+                </Text>
+              </View>
+            }
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => openCourse(item)}
+                activeOpacity={0.85}
+                className="bg-[#1E293B] rounded-2xl mb-3 overflow-hidden border border-[#334155] flex-row"
+              >
+                <Image
+                  source={{ uri: item.thumbnail || 'https://via.placeholder.com/120' }}
+                  className="w-28 h-28"
+                  contentFit="cover"
+                />
+                <View className="flex-1 p-3 justify-center">
+                  <Text className="text-white font-semibold text-base" numberOfLines={2}>
+                    {item.title}
+                  </Text>
+                  <Text className="text-[#6366F1] text-xs mt-1 uppercase">{item.category || 'Course'}</Text>
+                </View>
+                <View className="justify-center pr-3">
+                  <Ionicons name="chevron-forward" size={22} color="#64748B" />
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+        )}
+      </SafeAreaView>
+    </View>
+  );
+}
