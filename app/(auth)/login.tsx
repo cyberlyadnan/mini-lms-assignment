@@ -17,6 +17,7 @@ export default function LoginScreen() {
   const router = useRouter();
   const { login, isLoading } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const { control, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -24,12 +25,15 @@ export default function LoginScreen() {
 
   const onSubmit = async (data: LoginFormData) => {
     Keyboard.dismiss();
+    setSubmitting(true);
     try {
       await login({ email: data.email, password: data.password });
       // The router replace is usually caught by the layout, but explicitly navigating minimizes flicker
       router.replace('/(tabs)');
     } catch (error: any) {
       Alert.alert('Login Failed', error.message || 'Please check your credentials');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -97,12 +101,15 @@ export default function LoginScreen() {
         </View>
 
         <TouchableOpacity 
-          className="bg-[#6366F1] py-4 rounded-xl items-center justify-center mb-6 mt-4 opacity-90 active:opacity-100"
+          className={`bg-[#6366F1] py-4 rounded-xl items-center justify-center mb-6 mt-4 ${submitting || isLoading ? 'opacity-70' : 'opacity-90'} active:opacity-100`}
           onPress={handleSubmit(onSubmit)}
-          disabled={isLoading}
+          disabled={submitting || isLoading}
         >
-          {isLoading ? (
-            <ActivityIndicator color="#ffffff" />
+          {submitting || isLoading ? (
+            <View className="flex-row items-center">
+              <ActivityIndicator color="#ffffff" />
+              <Text className="text-white font-bold text-lg ml-3">Signing in…</Text>
+            </View>
           ) : (
             <Text className="text-white font-bold text-lg">Sign In</Text>
           )}

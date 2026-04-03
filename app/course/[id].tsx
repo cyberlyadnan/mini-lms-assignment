@@ -81,7 +81,7 @@ export default function CourseDetailScreen() {
   }
 
   return (
-    <View className="flex-1 bg-[#0F172A]">
+    <SafeAreaView className="flex-1 bg-[#0F172A]" edges={['top', 'bottom']}>
       <Stack.Screen
         options={{
           headerTitle: '',
@@ -192,6 +192,6 @@ export default function CourseDetailScreen() {
           </View>
          </SafeAreaView>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

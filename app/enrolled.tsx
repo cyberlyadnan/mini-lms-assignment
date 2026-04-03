@@ -40,7 +40,7 @@ export default function EnrolledCoursesScreen() {
   };
 
   return (
-    <View className="flex-1 bg-[#0F172A]">
+    <SafeAreaView className="flex-1 bg-[#0F172A]" edges={['top', 'bottom']}>
       <Stack.Screen
         options={{
           title: 'My courses',
@@ -51,49 +51,47 @@ export default function EnrolledCoursesScreen() {
           headerBackTitleVisible: false,
         }}
       />
-      <SafeAreaView className="flex-1" edges={['bottom']}>
-        {loading ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="large" color="#6366F1" />
-          </View>
-        ) : (
-          <FlatList
-            data={courses}
-            keyExtractor={(item) => String(item.id)}
-            contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24 }}
-            ListEmptyComponent={
-              <View className="py-16 px-4 items-center">
-                <Ionicons name="school-outline" size={48} color="#64748B" />
-                <Text className="text-gray-400 text-center mt-4 text-base leading-6">
-                  You have not enrolled in any courses yet.{'\n'}Discover courses on the Home tab.
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#6366F1" />
+        </View>
+      ) : (
+        <FlatList
+          data={courses}
+          keyExtractor={(item) => String(item.id)}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 12, paddingBottom: 24 }}
+          ListEmptyComponent={
+            <View className="py-16 px-4 items-center">
+              <Ionicons name="school-outline" size={48} color="#64748B" />
+              <Text className="text-gray-400 text-center mt-4 text-base leading-6">
+                You have not enrolled in any courses yet.{'\n'}Discover courses on the Home tab.
+              </Text>
+            </View>
+          }
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => openCourse(item)}
+              activeOpacity={0.85}
+              className="bg-[#1E293B] rounded-2xl mb-3 overflow-hidden border border-[#334155] flex-row"
+            >
+              <Image
+                source={{ uri: item.thumbnail || 'https://via.placeholder.com/120' }}
+                className="w-28 h-28"
+                contentFit="cover"
+              />
+              <View className="flex-1 p-3 justify-center">
+                <Text className="text-white font-semibold text-base" numberOfLines={2}>
+                  {item.title}
                 </Text>
+                <Text className="text-[#6366F1] text-xs mt-1 uppercase">{item.category || 'Course'}</Text>
               </View>
-            }
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => openCourse(item)}
-                activeOpacity={0.85}
-                className="bg-[#1E293B] rounded-2xl mb-3 overflow-hidden border border-[#334155] flex-row"
-              >
-                <Image
-                  source={{ uri: item.thumbnail || 'https://via.placeholder.com/120' }}
-                  className="w-28 h-28"
-                  contentFit="cover"
-                />
-                <View className="flex-1 p-3 justify-center">
-                  <Text className="text-white font-semibold text-base" numberOfLines={2}>
-                    {item.title}
-                  </Text>
-                  <Text className="text-[#6366F1] text-xs mt-1 uppercase">{item.category || 'Course'}</Text>
-                </View>
-                <View className="justify-center pr-3">
-                  <Ionicons name="chevron-forward" size={22} color="#64748B" />
-                </View>
-              </TouchableOpacity>
-            )}
-          />
-        )}
-      </SafeAreaView>
-    </View>
+              <View className="justify-center pr-3">
+                <Ionicons name="chevron-forward" size={22} color="#64748B" />
+              </View>
+            </TouchableOpacity>
+          )}
+        />
+      )}
+    </SafeAreaView>
   );
 }

@@ -93,38 +93,53 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
     try {
       const token = await getToken();
       if (!token) {
-        set({ isAuthenticated: false, isLoading: false });
+        set({ isAuthenticated: false, user: null, token: null });
         return;
       }
 
       const userStr = await getSecureItem(SECURE_KEYS.USER_KEY);
-      const user = userStr ? JSON.parse(userStr) : null;
-
-      set({ 
-        token, 
-        user, 
-        isAuthenticated: true, 
-        isLoading: false 
-      });
-
-      // Optionally refresh user data asynchronously
-      const res = await authService.getCurrentUser();
-      if (res.data) {
-        await saveSecureItem(SECURE_KEYS.USER_KEY, JSON.stringify(res.data));
-        set({ user: res.data });
+      let user: AuthUser | null = null;
+      try {
+        user = userStr ? (JSON.parse(userStr) as AuthUser) : null;
+      } catch {
+        user = null;
       }
 
-    } catch (error: any) {
-      // If error (e.g. 401 token expired), clean up state
+      set({
+        token,
+        user,
+        isAuthenticated: true,
+      });
+
+      // Local-only auth: never hit the network on boot (avoids long retries / hangs).
+      const isLocalSession = token.startsWith('local-token-');
+      if (isLocalSession) {
+        return;
+      }
+
+      // Remote session: refresh profile in background without blocking cold start forever
+      void (async () => {
+        try {
+          const res = await authService.getCurrentUser();
+          if (res.data) {
+            await saveSecureItem(SECURE_KEYS.USER_KEY, JSON.stringify(res.data));
+            set({ user: res.data });
+          }
+        } catch {
+          // Keep cached user from SecureStore
+        }
+      })();
+    } catch {
       await removeToken();
       await removeSecureItem(SECURE_KEYS.USER_KEY);
-      set({ 
-        user: null, 
-        token: null, 
-        isAuthenticated: false, 
-        isLoading: false, 
-        error: 'Session expired' 
+      set({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        error: 'Session expired',
       });
+    } finally {
+      set({ isLoading: false });
     }
-  }
+  },
 }));

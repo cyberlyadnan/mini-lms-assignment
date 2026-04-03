@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { View, Text, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { WebView } from 'react-native-webview';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { COURSE_HTML_TEMPLATE } from '../utils/constants';
 
 export default function WebviewScreen() {
@@ -48,7 +49,7 @@ export default function WebviewScreen() {
   };
 
   return (
-    <View className="flex-1 bg-[#0F172A]">
+    <SafeAreaView className="flex-1 bg-[#0F172A]" edges={['top', 'bottom']}>
       <Stack.Screen 
         options={{
           headerTitle: 'Course Content',
@@ -92,6 +93,6 @@ export default function WebviewScreen() {
           containerStyle={{ backgroundColor: '#0F172A' }}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
