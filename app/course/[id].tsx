@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View, Dimensions } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getItem, saveItem } from '../../utils/asyncStorage';
 import { ENROLLED_COURSE_KEY } from '../../utils/constants';
@@ -102,52 +102,125 @@ export default function CourseDetailScreen() {
       />
       
       <ScrollView className="flex-1" bounces={false}>
-        <Image
-          source={{ uri: course.thumbnail || 'https://via.placeholder.com/600x400' }}
-          className="w-full h-72"
-          contentFit="cover"
-        />
+        <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} className="h-[300px] w-full">
+          {course.images && course.images.length > 0 ? (
+            course.images.map((img, idx) => (
+              <Image
+                key={idx}
+                source={{ uri: img }}
+                style={{ width: Dimensions.get('window').width, height: 300 }}
+                contentFit="cover"
+              />
+            ))
+          ) : (
+            <Image
+              source={{ uri: course.thumbnail || 'https://via.placeholder.com/600x400' }}
+              style={{ width: Dimensions.get('window').width, height: 300 }}
+              contentFit="cover"
+            />
+          )}
+        </ScrollView>
         
         <View className="px-5 pt-6 pb-28">
-          <View className="flex-row items-center mb-3">
-            <View className="bg-[#1E293B] px-3 py-1 rounded-full border border-[#334155]">
-              <Text className="text-[#6366F1] font-medium text-xs uppercase tracking-wider">
-                {course.category || 'Course'}
-              </Text>
+          <View className="flex-row items-center justify-between mb-3">
+            <View className="flex-row items-center">
+              <View className="bg-[#1E293B] px-3 py-1 rounded-full border border-[#334155]">
+                <Text className="text-[#6366F1] font-medium text-xs uppercase tracking-wider">
+                  {course.category || 'Course'}
+                </Text>
+              </View>
+              <View className="flex-row items-center ml-4 bg-[#1E293B] px-2 py-1 rounded-md">
+                <Ionicons name="star" size={14} color="#FBBF24" />
+                <Text className="text-gray-300 ml-1 text-xs font-bold">{course.rating?.toFixed(1) || '0.0'}</Text>
+              </View>
             </View>
-            <View className="flex-row items-center ml-4">
-              <Ionicons name="star" size={14} color="#FBBF24" />
-              <Text className="text-gray-300 ml-1 text-sm">{course.rating?.toFixed(1) || '0.0'}</Text>
-            </View>
+            {course.discountPercentage > 0 && (
+              <View className="bg-emerald-500/20 px-3 py-1 rounded-full">
+                <Text className="text-emerald-400 font-bold text-xs">{course.discountPercentage}% OFF</Text>
+              </View>
+            )}
           </View>
 
-          <Text className="text-3xl font-bold text-white mb-2 leading-9">
+          <Text className="text-3xl font-bold text-white mb-1 leading-9">
             {course.title}
           </Text>
+          <Text className="text-gray-400 text-sm mb-4">By {course.brand || 'Learnify Originals'}</Text>
           
-          <Text className="text-[#6366F1] text-2xl font-bold mb-6">
-            ${course.price?.toFixed(2) || '0.00'}
-          </Text>
+          <View className="flex-row items-end mb-6">
+            <Text className="text-[#6366F1] text-3xl font-bold">
+              ${course.price?.toFixed(2) || '0.00'}
+            </Text>
+            {course.discountPercentage > 0 && (
+              <Text className="text-gray-500 text-lg line-through ml-3 mb-1">
+                ${(course.price * (1 + course.discountPercentage / 100)).toFixed(2)}
+              </Text>
+            )}
+            {course.stock > 0 && (
+              <Text className="text-gray-400 text-xs ml-auto mb-2 tracking-wide font-medium">ONLY {course.stock} SEATS LEFT</Text>
+            )}
+          </View>
           
           <Text className="text-xl font-bold text-white mb-3">About the Course</Text>
-          <Text className="text-gray-400 text-base leading-7 mb-8">
-            {course.description}
-          </Text>
+          <View className="bg-[#1E293B] p-4 rounded-xl mb-8 border border-[#334155]">
+            <Text className="text-gray-400 text-base leading-7">
+              {course.description}
+            </Text>
+          </View>
           
-          <Text className="text-xl font-bold text-white mb-4">Instructor</Text>
-          <View className="bg-[#1E293B] p-4 rounded-2xl flex-row items-center mb-4 border border-[#334155]">
-            <Image
-              source={{ uri: course.instructor?.picture?.large || 'https://via.placeholder.com/150' }}
-              className="w-16 h-16 rounded-full bg-gray-600"
-            />
-            <View className="ml-4 flex-1">
-              <Text className="text-white font-bold text-lg">
-                {course.instructor?.name?.title ? `${course.instructor.name.title} ` : ''}
-                {course.instructor?.name?.first} {course.instructor?.name?.last}
-              </Text>
-              <Text className="text-gray-400 text-sm mt-1">
-                @{course.instructor?.email?.split('@')[0] || 'instructor'}
-              </Text>
+          <Text className="text-xl font-bold text-white mb-4">Instructor Profile</Text>
+          <View className="bg-[#1E293B] p-5 rounded-2xl mb-4 border border-[#334155]">
+            <View className="flex-row items-center">
+              <Image
+                source={{ uri: course.instructor?.picture?.large || 'https://via.placeholder.com/150' }}
+                className="w-16 h-16 rounded-full bg-gray-600 border-2 border-[#6366F1]"
+              />
+              <View className="ml-4 flex-1">
+                <Text className="text-white font-bold text-xl">
+                  {course.instructor?.name?.title ? `${course.instructor.name.title} ` : ''}
+                  {course.instructor?.name?.first} {course.instructor?.name?.last}
+                </Text>
+                {course.instructor?.location?.city && (
+                  <View className="flex-row items-center mt-1.5">
+                    <Ionicons name="location" size={14} color="#94A3B8" />
+                    <Text className="text-gray-400 text-sm ml-1" numberOfLines={1}>
+                      {course.instructor.location.city}, {course.instructor.location.country}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            <View className="bg-[#0F172A] p-4 rounded-xl mt-5 flex-row flex-wrap">
+               {typeof course.instructor?.registered?.age === 'number' && (
+                 <View className="w-1/2 mb-4">
+                   <Text className="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Experience</Text>
+                   <Text className="text-white font-semibold">{course.instructor.registered.age} Years</Text>
+                 </View>
+               )}
+               {typeof course.instructor?.dob?.age === 'number' && (
+                 <View className="w-1/2 mb-4">
+                   <Text className="text-gray-500 text-[11px] uppercase tracking-wider mb-1">Age</Text>
+                   <Text className="text-white font-semibold">{course.instructor.dob.age} Years</Text>
+                 </View>
+               )}
+               {course.instructor?.email && (
+                 <View className="w-full mb-3 bg-[#1E293B] px-3 py-2 rounded-lg flex-row items-center">
+                   <Ionicons name="mail" size={16} color="#6366F1" />
+                   <View className="ml-3">
+                     <Text className="text-gray-500 text-[10px] uppercase tracking-wider mb-0.5">Email</Text>
+                     <Text className="text-gray-300 font-medium text-sm">{course.instructor.email}</Text>
+                   </View>
+                 </View>
+               )}
+               {course.instructor?.phone && (
+                 <View className="w-full bg-[#1E293B] px-3 py-2 rounded-lg flex-row items-center">
+                   <Ionicons name="call" size={16} color="#6366F1" />
+                   <View className="ml-3">
+                     <Text className="text-gray-500 text-[10px] uppercase tracking-wider mb-0.5">Contact</Text>
+                     <Text className="text-gray-300 font-medium text-sm">{course.instructor.phone}</Text>
+                   </View>
+                 </View>
+               )}
             </View>
           </View>
         </View>

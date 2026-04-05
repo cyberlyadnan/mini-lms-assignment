@@ -21,6 +21,18 @@ export interface Instructor {
     last: string;
   };
   email: string;
+  location?: {
+    street?: { number: number, name: string },
+    city?: string,
+    state?: string,
+    country?: string,
+    postcode?: number | string
+  };
+  phone?: string;
+  cell?: string;
+  dob?: { date: string, age: number };
+  registered?: { date: string, age: number };
+  nat?: string;
   picture: {
     large: string;
     medium: string;
