@@ -29,6 +29,7 @@ const CourseCardComponent: React.FC<CourseCardProps> = ({
         <Image
           source={{ uri: course.thumbnail || 'https://via.placeholder.com/400x200' }}
           className="flex-1 w-full h-full"
+          style={{ width: '100%', height: '100%' }}
           contentFit="cover"
           cachePolicy="memory-disk"
           transition={200}
@@ -77,6 +78,7 @@ const CourseCardComponent: React.FC<CourseCardProps> = ({
           <Image
             source={{ uri: course.instructor?.picture?.thumbnail || 'https://via.placeholder.com/150' }}
             className="w-8 h-8 rounded-full bg-gray-600"
+            style={{ width: 32, height: 32, borderRadius: 16 }}
             contentFit="cover"
           />
           <View className="ml-3 flex-1">

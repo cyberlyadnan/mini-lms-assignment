@@ -1,14 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View, Dimensions } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Header } from '../../components/Header';
+import { CourseWithInstructor } from '../../types/course.types';
 import { getItem, saveItem } from '../../utils/asyncStorage';
 import { ENROLLED_COURSE_KEY } from '../../utils/constants';
 import { enrolledIdsFromRaw } from '../../utils/enrolledCourses';
-import { Header } from '../../components/Header';
-import { CourseWithInstructor } from '../../types/course.types';
 
 export default function CourseDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -91,7 +91,7 @@ export default function CourseDetailScreen() {
   }
 
   return (
-    <View className="flex-1 bg-[#0F172A]">
+    <View className="flex-1 pb-8 bg-[#0F172A]">
       <Header 
         transparent 
         rightComponent={
@@ -173,6 +173,8 @@ export default function CourseDetailScreen() {
               <Image
                 source={{ uri: course.instructor?.picture?.large || 'https://via.placeholder.com/150' }}
                 className="w-16 h-16 rounded-full bg-gray-600 border-2 border-[#6366F1]"
+                style={{ width: 64, height: 64, borderRadius: 32 }}
+                contentFit="cover"
               />
               <View className="ml-4 flex-1">
                 <Text className="text-white font-bold text-xl">
