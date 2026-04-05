@@ -7,24 +7,22 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 
 const queryClient = new QueryClient();
 
-function InitialLayout() {
+export default function RootLayout() {
+  // Fire off notifications setup in the background
   useNotifications();
 
-  return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0F172A' } }}>
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-    </Stack>
-  );
-}
-
-export default function RootLayout() {
+  // CRITICAL FIX: To prevent "Attempted to navigate before mounting", the layout MUST
+  // return a Navigator (like Stack) or Slot directly on the very first render.
+  // We removed the nested `InitialLayout` component boundary which delayed mounting.
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <SafeAreaProvider>
-          <InitialLayout />
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#0F172A' } }}>
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+          </Stack>
         </SafeAreaProvider>
       </QueryClientProvider>
     </ErrorBoundary>

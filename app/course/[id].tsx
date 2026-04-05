@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, ScrollView, Text, TouchableOpacity, View, Image } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useCourseStore } from '../../store/courseStore';
 import { Header } from '../../components/Header';
+import { useCourseStore } from '../../store/courseStore';
 import { CourseWithInstructor } from '../../types/course.types';
 import { getItem, saveItem } from '../../utils/asyncStorage';
 import { ENROLLED_COURSE_KEY } from '../../utils/constants';
@@ -94,15 +94,14 @@ export default function CourseDetailScreen() {
   }
 
   return (
-    <View className="flex-1 pb-8 bg-[#0F172A]">
+    <SafeAreaView className="flex-1 pb-8 bg-[#0F172A]" edges={['top']}>
       <Header 
-        transparent 
         rightComponent={
           <TouchableOpacity 
-            className="bg-black/40 p-2 rounded-full" 
+            className="p-2 -mr-2 rounded-full" 
             onPress={() => course && toggleBookmark(course)}
           >
-            <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={22} color={isBookmarked ? "#6366F1" : "#FFFFFF"} />
+            <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={24} color={isBookmarked ? "#6366F1" : "#FFFFFF"} />
           </TouchableOpacity>
         }
       />
@@ -177,7 +176,8 @@ export default function CourseDetailScreen() {
           <View className="bg-[#1E293B] p-5 rounded-2xl mb-4 border border-[#334155]">
             <View className="flex-row items-center">
               <Image
-                source={{ uri: course.instructor?.picture?.large || 'https://via.placeholder.com/150' }}
+                // source={{ uri:  course.instructor?.picture?.large || 'https://via.placeholder.com/150' }}
+                source={{ uri:  course.instructor?.picture?.large || 'https://via.placeholder.com/150' }}
                 style={{ width: 64, height: 64, borderRadius: 32, borderWidth: 2, borderColor: '#6366F1' }}
                 resizeMode="cover"
               />
@@ -263,6 +263,6 @@ export default function CourseDetailScreen() {
           </View>
          </SafeAreaView>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

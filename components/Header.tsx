@@ -26,7 +26,7 @@ export function Header({ title, showBack = true, transparent = false, rightCompo
             onPress={() => router.canGoBack() ? router.back() : router.replace('/')} 
             className={`mr-4 p-2 -ml-2 rounded-full ${transparent ? 'bg-black/40' : ''}`}
           >
-            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+            <Ionicons name="chevron-back" size={28} color="#FFFFFF" />
           </TouchableOpacity>
         )}
         {title && <Text className="text-white text-xl font-bold flex-1" numberOfLines={1}>{title}</Text>}
