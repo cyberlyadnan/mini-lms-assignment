@@ -1,50 +1,89 @@
-# Welcome to your Expo app 👋
+# LearnHub Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+LearnHub is an Expo React Native course-discovery app with authentication, bookmarking, enrollment tracking, notifications, offline awareness, and a polished tab-based UI.
 
-## Get started
+## Tech Stack
 
-1. Install dependencies
+- Expo `~54.0.33`
+- React Native `0.81.5`
+- React `19.1.0`
+- Expo Router `~6.0.23`
+- TypeScript `~5.9.2`
+- Zustand `^5.0.12`
+- React Query `^5.96.1`
+- NativeWind `^4.2.3`
+- Axios `^1.14.0`
 
-   ```bash
-   npm install
-   ```
+## Prerequisites
 
-2. Start the app
+- Node.js `18+`
+- npm `9+`
+- Expo CLI (`npx expo ...` works without global install)
+- EAS CLI (`npm i -g eas-cli`) for APK builds
 
-   ```bash
-   npx expo start
-   ```
+## Setup
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+1. Clone the repository.
+2. Install dependencies:
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+3. Start development server:
 
-## Learn more
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+4. Run on device/emulator from the Expo terminal menu.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Environment Setup
 
-## Join the community
+No `.env` file is required.  
+This project uses a public API endpoint (`https://api.freeapi.app`) and local fallback auth for demo reliability.
 
-Join our community of developers creating universal apps.
+## Folder Structure
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- `app/` - Expo Router screens and layouts
+- `components/` - shared UI components
+- `hooks/` - reusable app hooks
+- `services/` - API clients and service modules
+- `store/` - Zustand state stores
+- `types/` - shared TypeScript models
+- `utils/` - constants, storage, notifications, helper functions
+
+## Run Commands
+
+Start app:
+
+```bash
+npx expo start
+```
+
+Build Android APK (EAS preview profile):
+
+```bash
+eas build --platform android --profile preview
+```
+
+## Architectural Decisions
+
+- Uses Expo Router file-based navigation for clear route ownership and tab/stack composition.
+- Uses Zustand for lightweight local state (auth, courses, preferences) and React Query for remote data caching.
+- Stores auth and sensitive data in SecureStore; app preferences/bookmarks/enrollment in AsyncStorage.
+- Implements centralized API error normalization (`handleApiError`) for consistent user-facing messages.
+
+## Known Limitations
+
+- Push notification behavior is limited in Expo Go; for full notifications use a development build.
+- Public API auth endpoints may be unavailable, so local fallback auth is used for demo continuity.
+- Enrolled course data is locally persisted and can include legacy ID-only records from earlier app versions.
+- Offline mode supports local browsing of saved state, but fresh network data requires connectivity.
+
+## Screenshots
+
+- Home screen - _Add screenshot here_
+- Course detail - _Add screenshot here_
+- Profile screen - _Add screenshot here_
+- Bookmarks and Enrolled screens - _Add screenshot here_

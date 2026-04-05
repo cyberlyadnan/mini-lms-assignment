@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { Image } from 'expo-image';
@@ -18,27 +18,31 @@ export default function CourseDetailScreen() {
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
 
+  const checkEnrollment = useCallback(async (): Promise<void> => {
+    try {
+      const raw = await getItem<unknown[]>(ENROLLED_COURSE_KEY) || [];
+      const enrolledIds = enrolledIdsFromRaw(raw);
+      if (id && enrolledIds.includes(String(id))) {
+        setIsEnrolled(true);
+      }
+    } catch {
+      setIsEnrolled(false);
+    }
+  }, [id]);
+
   useEffect(() => {
     if (courseData) {
       try {
         const parsed = JSON.parse(courseData);
         setCourse(parsed);
-      } catch (e) {
-        console.error('Error parsing course data', e);
+      } catch {
+        setCourse(null);
       }
     }
-    checkEnrollment();
-  }, [id, courseData]);
+    void checkEnrollment();
+  }, [courseData, checkEnrollment]);
 
-  const checkEnrollment = async () => {
-    const raw = await getItem<unknown[]>(ENROLLED_COURSE_KEY) || [];
-    const enrolledIds = enrolledIdsFromRaw(raw);
-    if (id && enrolledIds.includes(String(id))) {
-      setIsEnrolled(true);
-    }
-  };
-
-  const handleEnroll = () => {
+  const handleEnroll = (): void => {
     if (!id || isEnrolled || !course) return;
     const snapshot = course;
     setIsEnrolling(true);
@@ -47,16 +51,21 @@ export default function CourseDetailScreen() {
       setIsEnrolling(false);
       setIsEnrolled(true);
 
-      const raw = await getItem<unknown[]>(ENROLLED_COURSE_KEY) || [];
-      const ids = enrolledIdsFromRaw(raw);
-      const idStr = String(id);
-      if (ids.includes(idStr)) return;
+      try {
+        const raw = await getItem<unknown[]>(ENROLLED_COURSE_KEY) || [];
+        const ids = enrolledIdsFromRaw(raw);
+        const idStr = String(id);
+        if (ids.includes(idStr)) return;
 
-      const next = raw.filter((entry) => {
-        if (typeof entry === 'string') return entry !== idStr;
-        return String((entry as { id: number }).id) !== idStr;
-      });
-      await saveItem(ENROLLED_COURSE_KEY, [...next, snapshot]);
+        const next = raw.filter((entry) => {
+          if (typeof entry === 'string') return entry !== idStr;
+          return String((entry as { id: number }).id) !== idStr;
+        });
+        await saveItem(ENROLLED_COURSE_KEY, [...next, snapshot]);
+      } catch {
+        Alert.alert('Enrollment Failed', 'Could not save your enrollment. Please try again.');
+        setIsEnrolled(false);
+      }
     }, 1500);
   };
 
@@ -87,7 +96,6 @@ export default function CourseDetailScreen() {
           headerTitle: '',
           headerTransparent: true,
           headerTintColor: '#FFFFFF',
-          headerBackTitleVisible: false,
           headerRight: () => (
             <View style={{ paddingTop: insets.top }} className="flex-row items-center">
               <TouchableOpacity className="bg-black/40 p-2 rounded-full mr-4">

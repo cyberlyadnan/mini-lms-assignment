@@ -48,8 +48,8 @@ export default function ProfileScreen() {
       await removeSecureItem(SECURE_KEYS.TOKEN_KEY);
       await removeSecureItem(SECURE_KEYS.USER_KEY);
       router.replace('/(auth)/login');
-    } catch (error) {
-      console.warn('Failed to logout completely', error);
+    } catch {
+      router.replace('/(auth)/login');
     }
   };
 

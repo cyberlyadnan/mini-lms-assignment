@@ -29,7 +29,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     if (value !== internalValue) {
       setInternalValue(value);
     }
-  }, [value]);
+  }, [value, internalValue]);
 
   return (
     <View className="flex-row items-center bg-[#1E293B] rounded-xl px-4 py-2 my-4 border border-[#334155] h-14">

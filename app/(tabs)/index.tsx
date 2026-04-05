@@ -101,7 +101,7 @@ export default function CourseListScreen() {
       ) : isError ? (
         <View className="flex-1 justify-center items-center px-6">
           <Text className="text-red-400 text-lg font-bold mb-2 text-center">Oops! Something went wrong.</Text>
-          <Text className="text-gray-400 text-center mb-6">We couldn't load the courses. Please check your connection and try again.</Text>
+          <Text className="text-gray-400 text-center mb-6">We couldn&apos;t load the courses. Please check your connection and try again.</Text>
           <TouchableOpacity 
              className="bg-[#6366F1] px-6 py-4 rounded-xl shadow-lg"
              onPress={() => refetch()}
@@ -118,7 +118,7 @@ export default function CourseListScreen() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View className="py-20 items-center justify-center">
-              <Text className="text-gray-400 text-lg text-center leading-7">No courses found matching{'\n'}"{search}"</Text>
+              <Text className="text-gray-400 text-lg text-center leading-7">No courses found matching{'\n'}&quot;{search}&quot;</Text>
             </View>
           }
           refreshControl={

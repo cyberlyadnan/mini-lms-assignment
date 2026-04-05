@@ -26,12 +26,11 @@ export const authService = {
     } catch (error) {
       // Backend auth endpoints don't exist on freeapi; fall back to local-only auth
       const fakeUser: AuthUser = {
-        id: 'local-user',
+        _id: 'local-user',
         email,
         fullName: email.split('@')[0] || 'Learner',
         username: email.split('@')[0] || 'user',
-        // add any other optional fields in your AuthUser type with sensible defaults
-      } as AuthUser;
+      };
 
       const fakeToken = 'local-token-' + Date.now();
       await saveToken(fakeToken);
@@ -45,6 +44,7 @@ export const authService = {
         } as AuthResponse,
         message: 'Logged in locally',
         statusCode: 200,
+        success: true,
       };
     }
   },
@@ -57,11 +57,11 @@ export const authService = {
       return response.data;
     } catch {
       const fakeUser: AuthUser = {
-        id: 'local-user',
+        _id: 'local-user',
         email,
         fullName,
         username,
-      } as AuthUser;
+      };
 
       await SecureStore.setItemAsync(SECURE_KEYS.USER_KEY, JSON.stringify(fakeUser));
 
@@ -69,6 +69,7 @@ export const authService = {
         data: { user: fakeUser },
         message: 'Registered locally',
         statusCode: 200,
+        success: true,
       };
     }
   },
@@ -97,6 +98,7 @@ export const authService = {
         data: user as any,
         message: user ? 'Loaded local user' : 'No user',
         statusCode: 200,
+        success: true,
       };
     }
   }

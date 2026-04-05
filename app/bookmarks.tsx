@@ -6,7 +6,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useCourseStore } from '../store/courseStore';
-import { CourseWithInstructor } from '../types/course.types';
+import { BookmarkedCourse, CourseWithInstructor } from '../types/course.types';
 
 export default function BookmarksScreen() {
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function BookmarksScreen() {
     }, [loadBookmarks])
   );
 
-  const openCourse = (course: CourseWithInstructor) => {
+  const openCourse = useCallback((course: CourseWithInstructor): void => {
     router.push({
       pathname: '/course/[id]',
       params: {
@@ -26,7 +26,32 @@ export default function BookmarksScreen() {
         courseData: JSON.stringify(course),
       },
     });
-  };
+  }, [router]);
+
+  const renderBookmarkItem = useCallback(({ item }: { item: BookmarkedCourse }) => (
+    <TouchableOpacity
+      onPress={() => openCourse(item)}
+      activeOpacity={0.85}
+      className="bg-[#1E293B] rounded-2xl mb-3 overflow-hidden border border-[#334155] flex-row"
+    >
+      <Image
+        source={{ uri: item.thumbnail || 'https://via.placeholder.com/120' }}
+        className="w-28 h-28"
+        contentFit="cover"
+      />
+      <View className="flex-1 p-3 justify-center">
+        <Text className="text-white font-semibold text-base" numberOfLines={2}>
+          {item.title}
+        </Text>
+        <Text className="text-gray-500 text-xs mt-1">
+          Saved {item.bookmarkedAt ? new Date(item.bookmarkedAt).toLocaleDateString() : ''}
+        </Text>
+      </View>
+      <View className="justify-center pr-3">
+        <Ionicons name="chevron-forward" size={22} color="#64748B" />
+      </View>
+    </TouchableOpacity>
+  ), [openCourse]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#0F172A]" edges={['top', 'bottom']}>
@@ -37,7 +62,6 @@ export default function BookmarksScreen() {
           headerTintColor: '#FFFFFF',
           headerTitleStyle: { color: '#FFFFFF', fontWeight: '700' },
           headerShadowVisible: false,
-          headerBackTitleVisible: false,
         }}
       />
       <FlatList
@@ -52,30 +76,7 @@ export default function BookmarksScreen() {
             </Text>
           </View>
         }
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => openCourse(item)}
-            activeOpacity={0.85}
-            className="bg-[#1E293B] rounded-2xl mb-3 overflow-hidden border border-[#334155] flex-row"
-          >
-            <Image
-              source={{ uri: item.thumbnail || 'https://via.placeholder.com/120' }}
-              className="w-28 h-28"
-              contentFit="cover"
-            />
-            <View className="flex-1 p-3 justify-center">
-              <Text className="text-white font-semibold text-base" numberOfLines={2}>
-                {item.title}
-              </Text>
-              <Text className="text-gray-500 text-xs mt-1">
-                Saved {item.bookmarkedAt ? new Date(item.bookmarkedAt).toLocaleDateString() : ''}
-              </Text>
-            </View>
-            <View className="justify-center pr-3">
-              <Ionicons name="chevron-forward" size={22} color="#64748B" />
-            </View>
-          </TouchableOpacity>
-        )}
+        renderItem={renderBookmarkItem}
       />
     </SafeAreaView>
   );

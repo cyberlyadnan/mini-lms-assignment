@@ -43,8 +43,8 @@ export default function WebviewScreen() {
           router.replace('/(tabs)');
         }
       }
-    } catch (e) {
-      console.warn('Failed to parse webview message', e);
+    } catch {
+      // ignore malformed webview messages
     }
   };
 
@@ -55,7 +55,6 @@ export default function WebviewScreen() {
           headerTitle: 'Course Content',
           headerStyle: { backgroundColor: '#1E293B' },
           headerTintColor: '#FFFFFF',
-          headerBackTitleVisible: false,
         }} 
       />
 

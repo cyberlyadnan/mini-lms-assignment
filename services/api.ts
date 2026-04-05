@@ -2,6 +2,7 @@ import axios, { AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
 import { ApiError } from '../types/api.types';
+import { useAuthStore } from '../store/authStore';
 
 const BASE_URL = 'https://api.freeapi.app';
 const TIMEOUT = 10000; // 10 seconds
@@ -19,8 +20,8 @@ apiClient.interceptors.request.use(
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
-    } catch (error) {
-      console.error('Error fetching token from SecureStore', error);
+    } catch {
+      // Ignore token read errors to keep requests flowing
     }
     return config;
   },
@@ -37,11 +38,10 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true; // Prevent infinite 401 loops
       try {
-        await SecureStore.deleteItemAsync('accessToken');
-        await SecureStore.deleteItemAsync('refreshToken');
+        await useAuthStore.getState().logout();
         router.replace('/(auth)/login');
-      } catch (e) {
-        console.error('Error redirecting to login', e);
+      } catch {
+        // ignore redirect failures
       }
       return Promise.reject(error);
     }
@@ -66,6 +66,17 @@ apiClient.interceptors.response.use(
 
 export const handleApiError = (error: unknown): ApiError => {
   if (axios.isAxiosError(error)) {
+    const isTimeout =
+      error.code === 'ECONNABORTED' ||
+      (typeof error.message === 'string' && error.message.toLowerCase().includes('timeout'));
+
+    if (isTimeout) {
+      return {
+        message: 'Request timed out. Please check your internet and try again.',
+        statusCode: 408,
+      };
+    }
+
     return {
       message: error.response?.data?.message || error.message || 'An expected error occurred',
       statusCode: error.response?.status || 500,

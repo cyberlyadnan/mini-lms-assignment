@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useRouter } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
+import { handleApiError } from '../../services/api';
 
 const registerSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
@@ -39,8 +40,9 @@ export default function RegisterScreen() {
       });
       await login({ email: data.email, password: data.password });
       router.replace('/(tabs)');
-    } catch (error: any) {
-      Alert.alert('Registration Failed', error.message || 'An error occurred during registration');
+    } catch (error: unknown) {
+      const apiError = handleApiError(error);
+      Alert.alert('Registration Failed', apiError.message || 'An error occurred during registration');
     }
   };
 

@@ -51,8 +51,8 @@ export const usePreferenceStore = create<PreferenceState & PreferenceActions>((s
         hasOnboarded: prefs?.hasOnboarded ?? false,
         theme: prefs?.theme ?? 'system',
       });
-    } catch (error) {
-      console.error('Failed to load preferences', error);
+    } catch {
+      // keep defaults if preference loading fails
     }
   }
 }));

@@ -82,8 +82,8 @@ export const useCourseStore = create<CourseState & CourseActions>((set, get) => 
       if (savedBookmarks) {
         set({ bookmarks: savedBookmarks });
       }
-    } catch (error) {
-      console.error('Failed to load bookmarks', error);
+    } catch {
+      set({ bookmarks: [] });
     }
   }
 }));

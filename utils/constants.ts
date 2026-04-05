@@ -138,7 +138,7 @@ export const COURSE_HTML_TEMPLATE = `
           document.getElementById('course-instructor').textContent = 'Instructor: ' + (data.instructorName || 'Unknown');
         }
       } catch (e) {
-        console.error('Error parsing message from Native', e);
+        void e;
       }
     });
 
@@ -152,7 +152,7 @@ export const COURSE_HTML_TEMPLATE = `
           document.getElementById('course-instructor').textContent = 'Instructor: ' + (data.instructorName || 'Unknown');
         }
       } catch (e) {
-        console.error('Error parsing message from Native', e);
+        void e;
       }
     });
 

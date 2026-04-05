@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useRouter } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
+import { handleApiError } from '../../services/api';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email'),
@@ -31,7 +32,8 @@ export default function LoginScreen() {
       // The router replace is usually caught by the layout, but explicitly navigating minimizes flicker
       router.replace('/(tabs)');
     } catch (error: any) {
-      Alert.alert('Login Failed', error.message || 'Please check your credentials');
+      const apiError = handleApiError(error);
+      Alert.alert('Login Failed', apiError.message || 'Please check your credentials');
     } finally {
       setSubmitting(false);
     }
@@ -116,7 +118,7 @@ export default function LoginScreen() {
         </TouchableOpacity>
 
         <View className="flex-row justify-center mt-4">
-          <Text className="text-gray-400">Don't have an account? </Text>
+          <Text className="text-gray-400">Don&apos;t have an account? </Text>
           <Link href="/(auth)/register" asChild>
             <TouchableOpacity>
               <Text className="text-[#6366F1] font-bold">Sign Up</Text>

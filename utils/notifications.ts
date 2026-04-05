@@ -8,6 +8,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -22,8 +24,7 @@ export const requestPermissions = async (): Promise<boolean> => {
     }
 
     return finalStatus === 'granted';
-  } catch (error) {
-    console.warn('Failed to request notification permissions', error);
+  } catch {
     return false;
   }
 };
@@ -44,8 +45,8 @@ export const scheduleBookmarkNotification = async () => {
       },
       trigger: null, // immediate
     });
-  } catch (error) {
-    console.warn('Failed to schedule bookmark notification', error);
+  } catch {
+    return;
   }
 };
 
@@ -69,8 +70,8 @@ export const scheduleReminderNotification = async () => {
     });
 
     reminderNotificationId = id;
-  } catch (error) {
-    console.warn('Failed to schedule reminder notification', error);
+  } catch {
+    return;
   }
 };
 
@@ -80,8 +81,8 @@ export const cancelReminder = async () => {
       await Notifications.cancelScheduledNotificationAsync(reminderNotificationId);
       reminderNotificationId = null;
     }
-  } catch (error) {
-    console.warn('Failed to cancel reminder notification', error);
+  } catch {
+    return;
   }
 };
 
@@ -96,8 +97,8 @@ export const setupNotificationHandler = () => {
     if (data?.screen) {
       try {
         router.push(data.screen as any);
-      } catch (error) {
-        console.warn('Failed to navigate from notification', error);
+      } catch {
+        return;
       }
     }
   });
