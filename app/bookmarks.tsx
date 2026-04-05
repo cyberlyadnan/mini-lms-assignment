@@ -7,6 +7,7 @@ import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCourseStore } from '../store/courseStore';
 import { BookmarkedCourse, CourseWithInstructor } from '../types/course.types';
+import { Header } from '../components/Header';
 
 export default function BookmarksScreen() {
   const router = useRouter();
@@ -55,15 +56,7 @@ export default function BookmarksScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#0F172A]" edges={['top', 'bottom']}>
-      <Stack.Screen
-        options={{
-          title: 'Bookmarked',
-          headerStyle: { backgroundColor: '#0F172A' },
-          headerTintColor: '#FFFFFF',
-          headerTitleStyle: { color: '#FFFFFF', fontWeight: '700' },
-          headerShadowVisible: false,
-        }}
-      />
+      <Header title="Bookmarked" />
       <FlatList
         data={bookmarks}
         keyExtractor={(item) => String(item.id)}

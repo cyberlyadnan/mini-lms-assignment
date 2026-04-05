@@ -38,6 +38,12 @@ export default function CourseListScreen() {
     loadBookmarks();
   }, [loadBookmarks]);
 
+  useEffect(() => {
+    if (fetchedCourses && fetchedCourses.length > 0) {
+      console.log('Course list data from API:', fetchedCourses);
+    }
+  }, [fetchedCourses]);
+
   const filteredCourses = useMemo(() => {
     if (!search.trim()) return fetchedCourses;
     const lowerQuery = search.toLowerCase();

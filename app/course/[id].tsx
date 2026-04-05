@@ -4,10 +4,11 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CourseWithInstructor } from '../../types/course.types';
 import { getItem, saveItem } from '../../utils/asyncStorage';
 import { ENROLLED_COURSE_KEY } from '../../utils/constants';
 import { enrolledIdsFromRaw } from '../../utils/enrolledCourses';
+import { Header } from '../../components/Header';
+import { CourseWithInstructor } from '../../types/course.types';
 
 export default function CourseDetailScreen() {
   const insets = useSafeAreaInsets();
@@ -90,32 +91,14 @@ export default function CourseDetailScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0F172A]" edges={['top', 'bottom']}>
-      <Stack.Screen
-        options={{
-          headerTitle: '',
-          headerTransparent: true,
-          headerTintColor: '#FFFFFF',
-          headerRight: () => (
-            <View style={{ paddingTop: insets.top }} className="flex-row items-center">
-              <TouchableOpacity className="bg-black/40 p-2 rounded-full mr-4">
-                <Ionicons name="bookmark-outline" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-          ),
-          headerLeft: () => (
-            <View style={{ paddingTop: insets.top }} className="flex-row items-center">
-              <TouchableOpacity
-                className="bg-black/40 p-2 rounded-full ml-4"
-                onPress={() => router.back()}
-                accessibilityRole="button"
-                accessibilityLabel="Go back"
-              >
-                <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-          ),
-        }}
+    <View className="flex-1 bg-[#0F172A]">
+      <Header 
+        transparent 
+        rightComponent={
+          <TouchableOpacity className="bg-black/40 p-2 rounded-full mr-4">
+            <Ionicons name="bookmark-outline" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        }
       />
       
       <ScrollView className="flex-1" bounces={false}>
@@ -200,6 +183,6 @@ export default function CourseDetailScreen() {
           </View>
          </SafeAreaView>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

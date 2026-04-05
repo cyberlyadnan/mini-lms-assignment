@@ -4,6 +4,7 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 import { COURSE_HTML_TEMPLATE } from '../utils/constants';
+import { Header } from '../components/Header';
 
 export default function WebviewScreen() {
   const router = useRouter();
@@ -50,13 +51,7 @@ export default function WebviewScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#0F172A]" edges={['top', 'bottom']}>
-      <Stack.Screen 
-        options={{
-          headerTitle: 'Course Content',
-          headerStyle: { backgroundColor: '#1E293B' },
-          headerTintColor: '#FFFFFF',
-        }} 
-      />
+      <Header title="Course Content" />
 
       {isLoading && !hasError && (
         <View className="absolute top-0 left-0 right-0 z-10 w-full">

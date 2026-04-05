@@ -7,6 +7,7 @@ import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CourseWithInstructor } from '../types/course.types';
 import { loadEnrolledCourses } from '../utils/enrolledCourses';
+import { Header } from '../components/Header';
 
 export default function EnrolledCoursesScreen() {
   const router = useRouter();
@@ -64,15 +65,7 @@ export default function EnrolledCoursesScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#0F172A]" edges={['top', 'bottom']}>
-      <Stack.Screen
-        options={{
-          title: 'My courses',
-          headerStyle: { backgroundColor: '#0F172A' },
-          headerTintColor: '#FFFFFF',
-          headerTitleStyle: { color: '#FFFFFF', fontWeight: '700' },
-          headerShadowVisible: false,
-        }}
-      />
+      <Header title="My courses" />
       {loading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#6366F1" />
