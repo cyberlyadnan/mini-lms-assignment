@@ -1,7 +1,6 @@
-import React, { memo } from 'react';
-import { View, Text, TouchableOpacity, Pressable } from 'react-native';
-import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
+import React, { memo } from 'react';
+import { Pressable, Text, TouchableOpacity, View, Image } from 'react-native';
 import { CourseWithInstructor } from '../types/course.types';
 
 interface CourseCardProps {
@@ -28,11 +27,8 @@ const CourseCardComponent: React.FC<CourseCardProps> = ({
       <View className="h-44 w-full relative">
         <Image
           source={{ uri: course.thumbnail || 'https://via.placeholder.com/400x200' }}
-          className="flex-1 w-full h-full"
-          style={{ width: '100%', height: '100%' }}
-          contentFit="cover"
-          cachePolicy="memory-disk"
-          transition={200}
+          className="absolute top-0 left-0 w-full h-full"
+          resizeMode="cover"
         />
         
         {/* Bookmark Overlay Top Right */}
@@ -77,9 +73,8 @@ const CourseCardComponent: React.FC<CourseCardProps> = ({
         <View className="flex-row items-center">
           <Image
             source={{ uri: course.instructor?.picture?.thumbnail || 'https://via.placeholder.com/150' }}
-            className="w-8 h-8 rounded-full bg-gray-600"
             style={{ width: 32, height: 32, borderRadius: 16 }}
-            contentFit="cover"
+            resizeMode="cover"
           />
           <View className="ml-3 flex-1">
             <Text className="text-gray-300 text-sm font-medium" numberOfLines={1}>

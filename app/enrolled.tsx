@@ -1,9 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import { Image } from 'expo-image';
 import { Stack, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Text, TouchableOpacity, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CourseWithInstructor } from '../types/course.types';
 import { loadEnrolledCourses } from '../utils/enrolledCourses';
@@ -48,9 +47,8 @@ export default function EnrolledCoursesScreen() {
     >
       <Image
         source={{ uri: item.thumbnail || 'https://via.placeholder.com/120' }}
-        className="w-28 h-28"
         style={{ width: 112, height: 112 }}
-        contentFit="cover"
+        resizeMode="cover"
       />
       <View className="flex-1 p-3 justify-center">
         <Text className="text-white font-semibold text-base" numberOfLines={2}>

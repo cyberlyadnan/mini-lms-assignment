@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Dimensions, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Dimensions, ScrollView, Text, TouchableOpacity, View, Image } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useCourseStore } from '../../store/courseStore';
 import { Header } from '../../components/Header';
 import { CourseWithInstructor } from '../../types/course.types';
 import { getItem, saveItem } from '../../utils/asyncStorage';
@@ -16,6 +16,9 @@ export default function CourseDetailScreen() {
   const { id, courseData } = useLocalSearchParams<{ id: string, courseData: string }>();
   const [course, setCourse] = useState<CourseWithInstructor | null>(null);
   
+  const { bookmarks, toggleBookmark } = useCourseStore();
+  const isBookmarked = bookmarks.some(b => course && b.id === course.id);
+
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(false);
 
@@ -95,8 +98,11 @@ export default function CourseDetailScreen() {
       <Header 
         transparent 
         rightComponent={
-          <TouchableOpacity className="bg-black/40 p-2 rounded-full mr-4">
-            <Ionicons name="bookmark-outline" size={24} color="#FFFFFF" />
+          <TouchableOpacity 
+            className="bg-black/40 p-2 rounded-full" 
+            onPress={() => course && toggleBookmark(course)}
+          >
+            <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={22} color={isBookmarked ? "#6366F1" : "#FFFFFF"} />
           </TouchableOpacity>
         }
       />
@@ -109,14 +115,14 @@ export default function CourseDetailScreen() {
                 key={idx}
                 source={{ uri: img }}
                 style={{ width: Dimensions.get('window').width, height: 300 }}
-                contentFit="cover"
+                resizeMode="cover"
               />
             ))
           ) : (
             <Image
               source={{ uri: course.thumbnail || 'https://via.placeholder.com/600x400' }}
               style={{ width: Dimensions.get('window').width, height: 300 }}
-              contentFit="cover"
+              resizeMode="cover"
             />
           )}
         </ScrollView>
@@ -172,9 +178,8 @@ export default function CourseDetailScreen() {
             <View className="flex-row items-center">
               <Image
                 source={{ uri: course.instructor?.picture?.large || 'https://via.placeholder.com/150' }}
-                className="w-16 h-16 rounded-full bg-gray-600 border-2 border-[#6366F1]"
-                style={{ width: 64, height: 64, borderRadius: 32 }}
-                contentFit="cover"
+                style={{ width: 64, height: 64, borderRadius: 32, borderWidth: 2, borderColor: '#6366F1' }}
+                resizeMode="cover"
               />
               <View className="ml-4 flex-1">
                 <Text className="text-white font-bold text-xl">

@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
-import { COURSE_HTML_TEMPLATE } from '../utils/constants';
+import { getCourseHTMLTemplate } from '../utils/constants';
 import { Header } from '../components/Header';
 
 export default function WebviewScreen() {
@@ -18,21 +18,11 @@ export default function WebviewScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
-  const injectedPayload = JSON.stringify({
-    type: 'COURSE_DATA',
-    title: title || 'Course',
-    description: description || '',
-    instructorName: instructorName || ''
-  });
-
-  const injectedJavaScript = `
-    setTimeout(function() {
-       document.dispatchEvent(new MessageEvent('message', {
-         data: ${injectedPayload}
-       }));
-    }, 100);
-    true;
-  `;
+  const htmlContent = getCourseHTMLTemplate(
+    title || 'Course Overview', 
+    instructorName || 'Acclaimed Instructor', 
+    description || 'No description provided for this content.'
+  );
 
   const onMessage = (event: any) => {
     try {
@@ -72,8 +62,7 @@ export default function WebviewScreen() {
         <WebView
           ref={webViewRef}
           className="flex-1 bg-[#0F172A]"
-          source={{ html: COURSE_HTML_TEMPLATE }}
-          injectedJavaScript={injectedJavaScript}
+          source={{ html: htmlContent }}
           onMessage={onMessage}
           onLoadStart={() => setIsLoading(true)}
           onLoadEnd={() => setIsLoading(false)}

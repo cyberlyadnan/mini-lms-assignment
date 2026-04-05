@@ -18,7 +18,7 @@ export const APP_CONFIG = {
 
 export const ENROLLED_COURSE_KEY = 'enrolled_courses';
 
-export const COURSE_HTML_TEMPLATE = `
+export const getCourseHTMLTemplate = (title: string, instructor: string, description: string) => `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,136 +26,181 @@ export const COURSE_HTML_TEMPLATE = `
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Course Content</title>
   <style>
+    :root {
+      --primary: #6366F1;
+      --bg: #0F172A;
+      --surface: #1E293B;
+      --border: #334155;
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+    }
     body {
-      background-color: #0F172A;
-      color: #F8FAFC;
+      background-color: var(--bg);
+      color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
       padding: 0;
       line-height: 1.6;
     }
     .header {
-      background-color: #1E293B;
-      padding: 24px;
-      border-bottom: 1px solid #334155;
+      background: linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+      padding: 32px 24px 24px;
+      border-bottom: 1px solid var(--border);
     }
     .title {
-      font-size: 24px;
-      font-weight: 700;
-      margin: 0 0 8px 0;
+      font-size: 28px;
+      font-weight: 800;
+      margin: 0 0 12px 0;
       color: #FFFFFF;
+      letter-spacing: -0.5px;
+      line-height: 1.3;
     }
     .instructor {
-      font-size: 14px;
-      color: #94A3B8;
+      display: flex;
+      align-items: center;
+      font-size: 15px;
+      color: var(--text-muted);
       margin: 0;
+      font-weight: 500;
+    }
+    .instructor-badge {
+      background-color: rgba(99, 102, 241, 0.15);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-left: 12px;
     }
     .content {
       padding: 24px;
     }
-    .placeholder-video {
-      background-color: #1E293B;
+    .video-container {
+      position: relative;
       width: 100%;
-      height: 200px;
-      border-radius: 12px;
+      height: 220px;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 32px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      background-color: #000;
+    }
+    .video-thumbnail {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.7;
+    }
+    .play-overlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 24px;
-      border: 1px dashed #475569;
+      background: rgba(15, 23, 42, 0.4);
     }
     .play-button {
-      width: 48px;
-      height: 48px;
-      background-color: #6366F1;
+      width: 64px;
+      height: 64px;
+      background-color: var(--primary);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    .play-button:active {
+      transform: scale(0.95);
     }
     .play-triangle {
       width: 0;
       height: 0;
-      border-top: 8px solid transparent;
-      border-bottom: 8px solid transparent;
-      border-left: 12px solid white;
-      margin-left: 4px;
+      border-top: 10px solid transparent;
+      border-bottom: 10px solid transparent;
+      border-left: 16px solid white;
+      margin-left: 6px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #FFFFFF;
+      margin: 0 0 16px 0;
+      display: flex;
+      align-items: center;
     }
     .description {
       font-size: 16px;
       color: #CBD5E1;
-      margin-bottom: 32px;
+      margin-bottom: 40px;
+      background-color: var(--surface);
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
     }
     .button-container {
-      margin-top: 40px;
-      text-align: center;
+      margin-top: 20px;
+      margin-bottom: 40px;
     }
     .back-btn {
-      background-color: #6366F1;
+      background-color: var(--surface);
       color: white;
-      border: none;
-      padding: 14px 32px;
+      border: 1px solid var(--border);
+      padding: 16px 32px;
       border-radius: 12px;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .back-btn:active {
-      background-color: #4F46E5;
+      background-color: var(--bg);
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1 class="title" id="course-title">Loading...</h1>
-    <p class="instructor" id="course-instructor">Instructor: Loading...</p>
+    <h1 class="title">${title}</h1>
+    <div class="instructor">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      ${instructor}
+      <span class="instructor-badge">Author</span>
+    </div>
   </div>
   
   <div class="content">
-    <div class="placeholder-video">
-      <div class="play-button">
-        <div class="play-triangle"></div>
+    <div class="video-container" onclick="playVideo()">
+      <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="video-thumbnail" alt="Video presentation" />
+      <div class="play-overlay">
+        <div class="play-button">
+          <div class="play-triangle"></div>
+        </div>
       </div>
     </div>
     
-    <h3 style="margin-top: 0; color: #FFFFFF;">About This Module</h3>
-    <p class="description" id="course-desc">Please wait while we load the course contents.</p>
+    <h3 class="section-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+      About This Module
+    </h3>
+    <div class="description">${description}</div>
     
     <div class="button-container">
-      <button class="back-btn" onclick="goBack()">Back to App</button>
+      <button class="back-btn" onclick="goBack()">
+        Back to App
+      </button>
     </div>
   </div>
 
   <script>
-    // Listen for messages from React Native
-    document.addEventListener("message", function(event) {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'COURSE_DATA') {
-          document.getElementById('course-title').textContent = data.title || 'Course Details';
-          document.getElementById('course-desc').textContent = data.description || 'No description available.';
-          document.getElementById('course-instructor').textContent = 'Instructor: ' + (data.instructorName || 'Unknown');
-        }
-      } catch (e) {
-        void e;
-      }
-    });
-
-    // Fallback for iOS
-    window.addEventListener("message", function(event) {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'COURSE_DATA') {
-          document.getElementById('course-title').textContent = data.title || 'Course Details';
-          document.getElementById('course-desc').textContent = data.description || 'No description available.';
-          document.getElementById('course-instructor').textContent = 'Instructor: ' + (data.instructorName || 'Unknown');
-        }
-      } catch (e) {
-        void e;
-      }
-    });
-
+    function playVideo() {
+      // Logic to communicate play event
+    }
     function goBack() {
       if (window.ReactNativeWebView) {
         window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'BACK' }));
