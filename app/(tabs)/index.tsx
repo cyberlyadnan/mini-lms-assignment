@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { View, Text, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { FlatList, RefreshControl, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { CourseCard } from '../../components/CourseCard';
+import { OfflineBanner } from '../../components/OfflineBanner';
+import { SearchBar } from '../../components/SearchBar';
 import { useCourses } from '../../hooks/useCourses';
 import { useCourseStore } from '../../store/courseStore';
-import { CourseCard } from '../../components/CourseCard';
-import { SearchBar } from '../../components/SearchBar';
-import { OfflineBanner } from '../../components/OfflineBanner';
 import { CourseWithInstructor } from '../../types/course.types';
 
 // Simple Skeleton placeholder mimicking CourseCard layout

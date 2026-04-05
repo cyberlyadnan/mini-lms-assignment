@@ -1,8 +1,8 @@
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { WebView } from 'react-native-webview';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { WebView } from 'react-native-webview';
 import { COURSE_HTML_TEMPLATE } from '../utils/constants';
 
 export default function WebviewScreen() {

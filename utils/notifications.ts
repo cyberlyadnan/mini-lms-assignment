@@ -1,20 +1,31 @@
-import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { router } from 'expo-router';
 
-// Configure how notifications are handled when received in foreground
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Safely import expo-notifications to prevent crashes in Expo Go SDK 53+
+let Notifications: any = null;
+try {
+  // We use require to catch the error thrown by expo-notifications when running in Expo Go Android
+  Notifications = require('expo-notifications');
+
+  // Configure how notifications are handled when received in foreground
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+} catch (error) {
+  // Use console.log to avoid throwing a disruptive yellow screen warning in the app UI
+  console.log('Push notifications not available in this environment');
+}
 
 export const requestPermissions = async (): Promise<boolean> => {
   try {
+    if (!Notifications) return false;
+
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
@@ -33,6 +44,8 @@ let reminderNotificationId: string | null = null;
 
 export const scheduleBookmarkNotification = async () => {
   try {
+    if (!Notifications) return;
+
     await Notifications.scheduleNotificationAsync({
       content: {
         title: 'You have saved 5 courses!',
@@ -52,6 +65,8 @@ export const scheduleBookmarkNotification = async () => {
 
 export const scheduleReminderNotification = async () => {
   try {
+    if (!Notifications) return;
+
     const id = await Notifications.scheduleNotificationAsync({
       content: {
         title: 'We miss you!',
@@ -77,6 +92,8 @@ export const scheduleReminderNotification = async () => {
 
 export const cancelReminder = async () => {
   try {
+    if (!Notifications) return;
+
     if (reminderNotificationId) {
       await Notifications.cancelScheduledNotificationAsync(reminderNotificationId);
       reminderNotificationId = null;
@@ -87,8 +104,10 @@ export const cancelReminder = async () => {
 };
 
 export const setupNotificationHandler = () => {
+  if (!Notifications) return;
+
   // When the user taps on a notification and the app responds
-  Notifications.addNotificationResponseReceivedListener((response) => {
+  Notifications.addNotificationResponseReceivedListener((response: any) => {
     const data = response.notification.request.content.data as {
       type?: string;
       screen?: string;

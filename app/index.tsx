@@ -1,21 +1,29 @@
+import { useRootNavigationState, useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { Text, View } from 'react-native';
+import { ActivityIndicator, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useAuth } from '../hooks/useAuth';
 
 export default function Index() {
   const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    // Redirect to the tab-based home screen immediately
-    router.replace('/(tabs)');
-  }, [router]);
+    // Wait until the root layout has mounted and authentication check completes
+    if (isLoading || !rootNavigationState?.key) return;
+
+    if (isAuthenticated) {
+      router.replace('/(tabs)');
+    } else {
+      router.replace('/(auth)/login');
+    }
+  }, [isAuthenticated, isLoading, router, rootNavigationState?.key]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#0F172A] items-center justify-center">
-      <Text className="text-white text-lg">Loading your courses...</Text>
-      <View className="mt-4 rounded-full w-10 h-10 bg-[#6366F1] animate-pulse" />
+      <ActivityIndicator size="large" color="#6366F1" />
+      <Text className="text-white text-lg mt-4">Loading application...</Text>
     </SafeAreaView>
   );
 }
-

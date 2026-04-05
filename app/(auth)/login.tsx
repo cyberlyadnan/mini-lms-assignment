@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, Alert, ScrollView } from 'react-native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -40,10 +40,13 @@ export default function LoginScreen() {
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1 bg-[#0F172A] justify-center px-6"
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      className="flex-1 bg-[#0F172A]"
+    >
+      <ScrollView 
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 40 }}
+        keyboardShouldPersistTaps="handled"
       >
         <View className="mb-10">
           <Text className="text-4xl font-bold text-white mb-2">Welcome Back</Text>
@@ -117,7 +120,7 @@ export default function LoginScreen() {
           )}
         </TouchableOpacity>
 
-        <View className="flex-row justify-center mt-4">
+        <View className="flex-row justify-center mt-4 mb-6">
           <Text className="text-gray-400">Don&apos;t have an account? </Text>
           <Link href="/(auth)/register" asChild>
             <TouchableOpacity>
@@ -125,7 +128,7 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </Link>
         </View>
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

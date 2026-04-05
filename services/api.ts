@@ -2,7 +2,6 @@ import axios, { AxiosError } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { router } from 'expo-router';
 import { ApiError } from '../types/api.types';
-import { useAuthStore } from '../store/authStore';
 
 const BASE_URL = 'https://api.freeapi.app';
 const TIMEOUT = 10000; // 10 seconds
@@ -38,6 +37,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true; // Prevent infinite 401 loops
       try {
+        const { useAuthStore } = require('../store/authStore');
         await useAuthStore.getState().logout();
         router.replace('/(auth)/login');
       } catch {
