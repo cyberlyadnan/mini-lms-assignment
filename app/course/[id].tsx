@@ -7,7 +7,7 @@ import { Header } from '../../components/Header';
 import { useCourseStore } from '../../store/courseStore';
 import { CourseWithInstructor } from '../../types/course.types';
 import { getItem, saveItem } from '../../utils/asyncStorage';
-import { ENROLLED_COURSE_KEY } from '../../utils/constants';
+import { ENROLLED_COURSE_KEY, getCourseCover } from '../../utils/constants';
 import { enrolledIdsFromRaw } from '../../utils/enrolledCourses';
 
 export default function CourseDetailScreen() {
@@ -107,24 +107,16 @@ export default function CourseDetailScreen() {
       />
       
       <ScrollView className="flex-1" bounces={false}>
-        <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} className="h-[300px] w-full">
-          {course.images && course.images.length > 0 ? (
-            course.images.map((img, idx) => (
-              <Image
-                key={idx}
-                source={{ uri: img }}
-                style={{ width: Dimensions.get('window').width, height: 300 }}
-                resizeMode="cover"
-              />
-            ))
-          ) : (
-            <Image
-              source={{ uri: course.thumbnail || 'https://via.placeholder.com/600x400' }}
-              style={{ width: Dimensions.get('window').width, height: 300 }}
-              resizeMode="cover"
-            />
-          )}
-        </ScrollView>
+        <View className="h-[300px] w-full">
+          <Image
+            source={{ 
+              uri: getCourseCover(course.id),
+              headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15' }
+            }}
+            style={{ width: Dimensions.get('window').width, height: 300 }}
+            resizeMode="cover"
+          />
+        </View>
         
         <View className="px-5 pt-6 pb-28">
           <View className="flex-row items-center justify-between mb-3">
@@ -176,8 +168,10 @@ export default function CourseDetailScreen() {
           <View className="bg-[#1E293B] p-5 rounded-2xl mb-4 border border-[#334155]">
             <View className="flex-row items-center">
               <Image
-                // source={{ uri:  course.instructor?.picture?.large || 'https://via.placeholder.com/150' }}
-                source={{ uri:  course.instructor?.picture?.large || 'https://via.placeholder.com/150' }}
+                source={{ 
+                  uri: course.instructor?.picture?.large || 'https://via.placeholder.com/150',
+                  headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15' }
+                }}
                 style={{ width: 64, height: 64, borderRadius: 32, borderWidth: 2, borderColor: '#6366F1' }}
                 resizeMode="cover"
               />

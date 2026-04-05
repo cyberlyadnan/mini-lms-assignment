@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { memo } from 'react';
 import { Pressable, Text, TouchableOpacity, View, Image } from 'react-native';
 import { CourseWithInstructor } from '../types/course.types';
+import { getCourseCover } from '../utils/constants';
 
 interface CourseCardProps {
   course: CourseWithInstructor;
@@ -26,7 +27,10 @@ const CourseCardComponent: React.FC<CourseCardProps> = ({
     >
       <View className="h-44 w-full relative">
         <Image
-          source={{ uri: course.thumbnail || 'https://via.placeholder.com/400x200' }}
+          source={{ 
+            uri: getCourseCover(course.id),
+            headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15' }
+          }}
           className="absolute top-0 left-0 w-full h-full"
           resizeMode="cover"
         />
@@ -72,7 +76,10 @@ const CourseCardComponent: React.FC<CourseCardProps> = ({
         
         <View className="flex-row items-center">
           <Image
-            source={{ uri: course.instructor?.picture?.thumbnail || 'https://via.placeholder.com/150' }}
+            source={{ 
+              uri: course.instructor?.picture?.thumbnail || 'https://via.placeholder.com/150',
+              headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15' }
+            }}
             style={{ width: 32, height: 32, borderRadius: 16 }}
             resizeMode="cover"
           />

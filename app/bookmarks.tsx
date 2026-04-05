@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useCourseStore } from '../store/courseStore';
 import { BookmarkedCourse, CourseWithInstructor } from '../types/course.types';
 import { Header } from '../components/Header';
+import { getCourseCover } from '../utils/constants';
 
 export default function BookmarksScreen() {
   const router = useRouter();
@@ -35,7 +36,10 @@ export default function BookmarksScreen() {
       className="bg-[#1E293B] rounded-2xl mb-3 overflow-hidden border border-[#334155] flex-row"
     >
       <Image
-        source={{ uri: item.thumbnail || 'https://via.placeholder.com/120' }}
+        source={{ 
+          uri: getCourseCover(item.id),
+          headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15' }
+        }}
         style={{ width: 112, height: 112 }}
         resizeMode="cover"
       />

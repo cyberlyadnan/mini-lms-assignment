@@ -18,6 +18,26 @@ export const APP_CONFIG = {
 
 export const ENROLLED_COURSE_KEY = 'enrolled_courses';
 
+export const COURSE_COVERS = [
+  "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80", 
+  "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=80", 
+  "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&q=80", 
+  "https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=800&q=80", 
+  "https://images.unsplash.com/photo-1584697964154-7f8d8f7a8c7f?w=800&q=80", 
+  "https://images.unsplash.com/photo-1532012197267-da84d127e765?w=800&q=80", 
+  "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&q=80", 
+  "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=80", 
+  "https://images.unsplash.com/photo-1588072432836-e10032774350?w=800&q=80", 
+  "https://images.unsplash.com/photo-1513258496099-48168024aec0?w=800&q=80"  
+];
+
+export const getCourseCover = (id?: number | string | null): string => {
+  if (!id) return COURSE_COVERS[0];
+  const numId = typeof id === 'string' ? parseInt(id, 10) : id;
+  if (isNaN(numId)) return COURSE_COVERS[0];
+  return COURSE_COVERS[numId % COURSE_COVERS.length];
+};
+
 export const getCourseHTMLTemplate = (title: string, instructor: string, description: string) => `
 <!DOCTYPE html>
 <html lang="en">
