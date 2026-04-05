@@ -1,14 +1,21 @@
-import { create } from 'zustand';
-import { AuthUser, LoginRequest, RegisterRequest } from '../types/auth.types';
-import { authService } from '../services/authService';
-import { saveToken, removeToken, getToken, saveSecureItem, getSecureItem, removeSecureItem } from '../utils/secureStorage';
-import { SECURE_KEYS } from '../utils/constants';
+import { create } from "zustand";
+import { authService } from "../services/authService";
+import { AuthUser, LoginRequest, RegisterRequest } from "../types/auth.types";
+import { SECURE_KEYS } from "../utils/constants";
+import {
+    getSecureItem,
+    getToken,
+    removeSecureItem,
+    removeToken,
+    saveSecureItem
+} from "../utils/secureStorage";
 
 interface AuthState {
   user: AuthUser | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitialized: boolean;
   error: string | null;
 }
 
@@ -24,31 +31,35 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
   token: null,
   isAuthenticated: false,
   isLoading: false,
+  isInitialized: false,
   error: null,
 
   login: async (credentials: LoginRequest) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await authService.login(credentials.email || '', credentials.password);
+      const res = await authService.login(
+        credentials.email || "",
+        credentials.password,
+      );
       const token = res.data?.accessToken || null;
       const user = res.data?.user || null;
-      
+
       // authService.login already persists the token, but we ensure it matches state.
       // We manually persist user data since SecureStore handles simple strings securely.
       if (user) {
         await saveSecureItem(SECURE_KEYS.USER_KEY, JSON.stringify(user));
       }
 
-      set({ 
-        user, 
-        token, 
-        isAuthenticated: !!token, 
-        isLoading: false 
+      set({
+        user,
+        token,
+        isAuthenticated: !!token,
+        isLoading: false,
       });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Login failed', 
-        isLoading: false 
+      set({
+        error: error.message || "Login failed",
+        isLoading: false,
       });
       throw error;
     }
@@ -57,12 +68,17 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
   register: async (data: RegisterRequest) => {
     set({ isLoading: true, error: null });
     try {
-      await authService.register(data.username, data.fullName, data.email, data.password);
+      await authService.register(
+        data.username,
+        data.fullName,
+        data.email,
+        data.password,
+      );
       set({ isLoading: false });
     } catch (error: any) {
-      set({ 
-        error: error.message || 'Registration failed', 
-        isLoading: false 
+      set({
+        error: error.message || "Registration failed",
+        isLoading: false,
       });
       throw error;
     }
@@ -71,19 +87,25 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
   logout: async () => {
     set({ isLoading: true, error: null });
     try {
-      await authService.logout(); // Automatically clears Token in SecureStore
-      await removeSecureItem(SECURE_KEYS.USER_KEY);
-      
-      set({ 
-        user: null, 
-        token: null, 
-        isAuthenticated: false, 
-        isLoading: false 
+      await authService.logout();
+      await removeToken().catch(() => undefined);
+      await removeSecureItem(SECURE_KEYS.USER_KEY).catch(() => undefined);
+
+      set({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
       });
-    } catch (error: any) {
-      set({ 
-        error: error.message || 'Logout failed', 
-        isLoading: false 
+    } catch (error: unknown) {
+      await removeToken().catch(() => undefined);
+      await removeSecureItem(SECURE_KEYS.USER_KEY).catch(() => undefined);
+      set({
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: error instanceof Error ? error.message : "Logout failed",
       });
     }
   },
@@ -112,7 +134,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
       });
 
       // Local-only auth: never hit the network on boot (avoids long retries / hangs).
-      const isLocalSession = token.startsWith('local-token-');
+      const isLocalSession = token.startsWith("local-token-");
       if (isLocalSession) {
         return;
       }
@@ -122,7 +144,10 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
         try {
           const res = await authService.getCurrentUser();
           if (res.data) {
-            await saveSecureItem(SECURE_KEYS.USER_KEY, JSON.stringify(res.data));
+            await saveSecureItem(
+              SECURE_KEYS.USER_KEY,
+              JSON.stringify(res.data),
+            );
             set({ user: res.data });
           }
         } catch {
@@ -136,10 +161,10 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
         user: null,
         token: null,
         isAuthenticated: false,
-        error: 'Session expired',
+        error: "Session expired",
       });
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false, isInitialized: true });
     }
   },
 }));

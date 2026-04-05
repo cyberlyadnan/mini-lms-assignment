@@ -1,15 +1,21 @@
 import { Stack } from 'expo-router';
+import { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
 import { useNotifications } from '../hooks/useNotifications';
 import { ErrorBoundary } from '../components/ErrorBoundary';
+import { useAuthStore } from '../store/authStore';
 
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  // Fire off notifications setup in the background
   useNotifications();
+
+  // Hydrate session once at app root — not inside index/login (prevents duplicate checkAuth + nav loops)
+  useEffect(() => {
+    void useAuthStore.getState().checkAuth();
+  }, []);
 
   // CRITICAL FIX: To prevent "Attempted to navigate before mounting", the layout MUST
   // return a Navigator (like Stack) or Slot directly on the very first render.

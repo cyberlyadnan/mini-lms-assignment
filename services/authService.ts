@@ -75,15 +75,23 @@ export const authService = {
   },
 
   logout: async (): Promise<void> => {
-    try {
-      await apiClient.post('/api/v1/users/logout');
-    } catch (error) {
-      // Ignored if it fails due to network/token issues
-    } finally {
-      await SecureStore.deleteItemAsync('accessToken');
-      await SecureStore.deleteItemAsync('refreshToken');
-      await SecureStore.deleteItemAsync(SECURE_KEYS.USER_KEY);
-    }
+    const wipe = async (key: string): Promise<void> => {
+      try {
+        await SecureStore.deleteItemAsync(key);
+      } catch {
+        // missing key / SecureStore errors — still logged out
+      }
+    };
+
+    // Clear local session first so logout never blocks on slow/404 API + axios retries
+    await wipe('accessToken');
+    await wipe('refreshToken');
+    await wipe(SECURE_KEYS.USER_KEY);
+    await wipe(SECURE_KEYS.TOKEN_KEY);
+
+    void apiClient
+      .post('/api/v1/users/logout', undefined, { timeout: 4000 })
+      .catch(() => undefined);
   },
 
   getCurrentUser: async (): Promise<ApiResponse<AuthUser>> => {
