@@ -1,9 +1,8 @@
-import axios, { AxiosError } from 'axios';
-import * as SecureStore from 'expo-secure-store';
-import { router } from 'expo-router';
-import { ApiError } from '../types/api.types';
+import axios, { AxiosError } from "axios";
+import { ApiError } from "../types/api.types";
+import { getToken } from "../utils/secureStorage";
 
-const BASE_URL = 'https://api.freeapi.app';
+const BASE_URL = "https://api.freeapi.app";
 const TIMEOUT = 10000; // 10 seconds
 
 export const apiClient = axios.create({
@@ -15,7 +14,7 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(
   async (config) => {
     try {
-      const token = await SecureStore.getItemAsync('accessToken');
+      const token = await getToken();
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -24,7 +23,7 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response Interceptor
@@ -37,11 +36,10 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true; // Prevent infinite 401 loops
       try {
-        const { useAuthStore } = require('../store/authStore');
+        const { useAuthStore } = require("../store/authStore");
         await useAuthStore.getState().logout();
-        router.replace('/(auth)/login');
       } catch {
-        // ignore redirect failures
+        // ignore logout failures
       }
       return Promise.reject(error);
     }
@@ -61,30 +59,34 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export const handleApiError = (error: unknown): ApiError => {
   if (axios.isAxiosError(error)) {
     const isTimeout =
-      error.code === 'ECONNABORTED' ||
-      (typeof error.message === 'string' && error.message.toLowerCase().includes('timeout'));
+      error.code === "ECONNABORTED" ||
+      (typeof error.message === "string" &&
+        error.message.toLowerCase().includes("timeout"));
 
     if (isTimeout) {
       return {
-        message: 'Request timed out. Please check your internet and try again.',
+        message: "Request timed out. Please check your internet and try again.",
         statusCode: 408,
       };
     }
 
     return {
-      message: error.response?.data?.message || error.message || 'An expected error occurred',
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "An expected error occurred",
       statusCode: error.response?.status || 500,
       errors: error.response?.data?.errors,
     };
   }
   return {
-    message: typeof error === 'string' ? error : 'An unexpected error occurred',
+    message: typeof error === "string" ? error : "An unexpected error occurred",
     statusCode: 500,
   };
 };

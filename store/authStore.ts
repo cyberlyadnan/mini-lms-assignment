@@ -1,13 +1,19 @@
 import { create } from "zustand";
 import { authService } from "../services/authService";
-import { AuthUser, LoginRequest, RegisterRequest } from "../types/auth.types";
+import {
+  ApiResponse,
+  AuthResponse,
+  AuthUser,
+  LoginRequest,
+  RegisterRequest,
+} from "../types/auth.types";
 import { SECURE_KEYS } from "../utils/constants";
 import {
-    getSecureItem,
-    getToken,
-    removeSecureItem,
-    removeToken,
-    saveSecureItem
+  getSecureItem,
+  getToken,
+  removeSecureItem,
+  removeToken,
+  saveSecureItem,
 } from "../utils/secureStorage";
 
 interface AuthState {
@@ -36,16 +42,17 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
 
   login: async (credentials: LoginRequest) => {
     set({ isLoading: true, error: null });
+
     try {
       const res = await authService.login(
         credentials.email || "",
         credentials.password,
       );
-      const token = res.data?.accessToken || null;
-      const user = res.data?.user || null;
 
-      // authService.login already persists the token, but we ensure it matches state.
-      // We manually persist user data since SecureStore handles simple strings securely.
+      const authPayload = (res as ApiResponse<AuthResponse>).data ?? res;
+      const token = authPayload?.accessToken ?? null;
+      const user = authPayload?.user ?? null;
+
       if (user) {
         await saveSecureItem(SECURE_KEYS.USER_KEY, JSON.stringify(user));
       }
@@ -55,11 +62,13 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
         token,
         isAuthenticated: !!token,
         isLoading: false,
+        isInitialized: true,
       });
     } catch (error: any) {
       set({
         error: error.message || "Login failed",
         isLoading: false,
+        isInitialized: true,
       });
       throw error;
     }
@@ -85,7 +94,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
   },
 
   logout: async () => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, isAuthenticated: false });
     try {
       await authService.logout();
       await removeToken().catch(() => undefined);
@@ -95,6 +104,7 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
         user: null,
         token: null,
         isAuthenticated: false,
+        isInitialized: true,
         isLoading: false,
       });
     } catch (error: unknown) {
@@ -112,51 +122,56 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
 
   checkAuth: async () => {
     set({ isLoading: true, error: null });
+
     try {
       const token = await getToken();
+
       if (!token) {
-        set({ isAuthenticated: false, user: null, token: null });
-        return;
-      }
+        set({
+          isAuthenticated: false,
+          user: null,
+          token: null,
+        });
+      } else {
+        const userStr = await getSecureItem(SECURE_KEYS.USER_KEY);
 
-      const userStr = await getSecureItem(SECURE_KEYS.USER_KEY);
-      let user: AuthUser | null = null;
-      try {
-        user = userStr ? (JSON.parse(userStr) as AuthUser) : null;
-      } catch {
-        user = null;
-      }
-
-      set({
-        token,
-        user,
-        isAuthenticated: true,
-      });
-
-      // Local-only auth: never hit the network on boot (avoids long retries / hangs).
-      const isLocalSession = token.startsWith("local-token-");
-      if (isLocalSession) {
-        return;
-      }
-
-      // Remote session: refresh profile in background without blocking cold start forever
-      void (async () => {
+        let user: AuthUser | null = null;
         try {
-          const res = await authService.getCurrentUser();
-          if (res.data) {
-            await saveSecureItem(
-              SECURE_KEYS.USER_KEY,
-              JSON.stringify(res.data),
-            );
-            set({ user: res.data });
-          }
+          user = userStr ? JSON.parse(userStr) : null;
         } catch {
-          // Keep cached user from SecureStore
+          user = null;
         }
-      })();
+
+        set({
+          token,
+          user,
+          isAuthenticated: true,
+        });
+
+        // Background refresh (NO return here)
+        const isLocalSession = token.startsWith("local-token-");
+
+        if (!isLocalSession) {
+          void (async () => {
+            try {
+              const res = await authService.getCurrentUser();
+              if (res.data) {
+                await saveSecureItem(
+                  SECURE_KEYS.USER_KEY,
+                  JSON.stringify(res.data),
+                );
+                set({ user: res.data });
+              }
+            } catch {
+              // silent fail
+            }
+          })();
+        }
+      }
     } catch {
       await removeToken();
       await removeSecureItem(SECURE_KEYS.USER_KEY);
+
       set({
         user: null,
         token: null,
@@ -164,7 +179,10 @@ export const useAuthStore = create<AuthState & AuthActions>((set) => ({
         error: "Session expired",
       });
     } finally {
-      set({ isLoading: false, isInitialized: true });
+      set({
+        isLoading: false,
+        isInitialized: true, // 🔥 ALWAYS RUNS NOW
+      });
     }
   },
 }));

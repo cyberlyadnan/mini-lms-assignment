@@ -1,23 +1,21 @@
+import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
   Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
-import { useRouter, type Href } from 'expo-router';
 import { useAuthStore } from '../../store/authStore';
 import { useCourseStore } from '../../store/courseStore';
 import { clearAll as clearAsyncStorage } from '../../utils/asyncStorage';
-import { removeSecureItem } from '../../utils/secureStorage';
 import { SECURE_KEYS } from '../../utils/constants';
 import { loadEnrolledCourses } from '../../utils/enrolledCourses';
-
-const LOGIN_HREF: Href = '/(auth)/login';
+import { removeSecureItem } from '../../utils/secureStorage';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -53,33 +51,20 @@ export default function ProfileScreen() {
 
   // Do not call router.dismissAll() here — it sends POP_TO_TOP, which tab navigators
   // do not handle and triggers a dev warning. replace() is enough to leave the app shell.
-  const goToLogin = useCallback((): void => {
-    requestAnimationFrame(() => {
-      try {
-        router.replace(LOGIN_HREF);
-      } catch {
-        router.navigate(LOGIN_HREF);
-      }
-    });
-  }, [router]);
 
-  const handleLogout = useCallback(async (): Promise<void> => {
-    if (loggingOut) return;
-    setLoggingOut(true);
-    try {
-      await logout();
-      try {
-        await clearAsyncStorage();
-      } catch {
-        // continue — user must leave the app session
-      }
-      await removeSecureItem(SECURE_KEYS.TOKEN_KEY).catch(() => undefined);
-      await removeSecureItem(SECURE_KEYS.USER_KEY).catch(() => undefined);
-    } finally {
-      goToLogin();
-      setLoggingOut(false);
-    }
-  }, [logout, goToLogin, loggingOut]);
+const handleLogout = async () => {
+  if (loggingOut) return;
+
+  setLoggingOut(true);
+  try {
+    await logout();
+    await clearAsyncStorage().catch(() => {});
+    await removeSecureItem(SECURE_KEYS.TOKEN_KEY).catch(() => {});
+    await removeSecureItem(SECURE_KEYS.USER_KEY).catch(() => {});
+  } finally {
+    setLoggingOut(false);
+  }
+};
 
   const busy = loggingOut || authBusy;
 

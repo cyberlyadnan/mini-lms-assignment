@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Alert, Keyboard } from 'react-native';
-import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Link } from 'expo-router';
+import React, { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { ActivityIndicator, Alert, Keyboard, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { z } from 'zod';
-import { Link, useRouter } from 'expo-router';
-import { useAuthStore } from '../../store/authStore';
 import { handleApiError } from '../../services/api';
+import { useAuthStore } from '../../store/authStore';
 
 const registerSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters'),
@@ -21,7 +21,6 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterScreen() {
-  const router = useRouter();
   const { register, login, isLoading } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -39,7 +38,6 @@ export default function RegisterScreen() {
         password: data.password 
       });
       await login({ email: data.email, password: data.password });
-      router.replace('/(tabs)');
     } catch (error: unknown) {
       const apiError = handleApiError(error);
       Alert.alert('Registration Failed', apiError.message || 'An error occurred during registration');
